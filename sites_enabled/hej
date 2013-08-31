@@ -1,0 +1,29 @@
+server {
+	listen 10.11.12.99;
+
+	server_name hej;
+	root /var/www/hej;
+
+	add_header X-Frame-Options SAMEORIGIN;
+	default_type text/html;
+
+	access_log  /var/www/hej-access.log;
+	error_log   /var/www/hej-error.log  notice;
+	rewrite_log on;
+
+	error_page 500 501 502 503 504 505 506 507 /50x.html;
+
+	location ~ /\. { deny all; access_log off; log_not_found off; }
+
+	location / {
+		if (!-f $request_filename) {
+			rewrite ^ /index.php$request_uri last;
+		}
+	}
+	location ~ [^/]\.php(/|$) {
+		fastcgi_split_path_info ^(.+?\.php)(/.+)$;
+		fastcgi_pass unix:/var/run/php5-fpm.sock;
+		fastcgi_index index.php;
+		include fastcgi_params;
+	}
+}
